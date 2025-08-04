@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres
+    container_name: bookstore-postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/pgdata:/var/lib/postgresql/data
+    command: ["postgres", "-c", "listen_addresses=*", "-c", "max_connections=100"]
+    environment:
+      - POSTGRES_DB=bookstore_db
+      - POSTGRES_USER=bookstore_user
+      - POSTGRES_PASSWORD=pass1234
+    networks:
+      - bookstore-net
+
+  fastapi:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: bookstore-fastapi
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    volumes:
+      - ./:/root/task
+    working_dir: /root/task
+    networks:
+      - bookstore-net
+
+networks:
+  bookstore-net:
